@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @AllArgsConstructor
-@Data
 public class ErrorResposta {
-
     private String dataHora;
 
     private Integer status;
@@ -14,5 +12,4 @@ public class ErrorResposta {
     private String titulo;
 
     private String mensagem;
-
 }

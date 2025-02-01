@@ -1,15 +1,19 @@
 package com.example.api_sistemafinanceiro.gui.domain.service;
 
+import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceBadRequestException;
 import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceNotFoundException;
 import com.example.api_sistemafinanceiro.gui.domain.model.Usuario;
 import com.example.api_sistemafinanceiro.gui.domain.repository.UsuarioRepository;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioRequestDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioResponseDto;
-import com.example.api_sistemafinanceiro.gui.mappers.UsuarioMapper;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -17,35 +21,66 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
 
     private UsuarioRepository usuarioRepository;
 
-    private UsuarioMapper usuarioMapper;
+    private ModelMapper mapper;
 
     @Override
-    public List<UsuarioResponseDto> findAll() throws ResourceNotFoundException {
-        List<Usuario> usuarios = usuarioRepository.findAll();
-
-        if(usuarios.isEmpty()) throw new ResourceNotFoundException("Não tem usuarios cadastrados");
-
-        return usuarios.stream().map(usuarioMapper::toUsuarioResponseDto).toList();
+    public List<UsuarioResponseDto> findAll() {
+        return usuarioRepository.findAll().stream()
+                .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class)).toList();
     }
 
     @Override
-    public UsuarioResponseDto findById(Long id) throws ResourceNotFoundException {
-        return usuarioRepository.findById(id).map(usuarioMapper::toUsuarioResponseDto)
+    public UsuarioResponseDto findById(Long id) {
+        return usuarioRepository.findById(id)
+                .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class))
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find user with this id"));
     }
 
     @Override
     public UsuarioResponseDto create(UsuarioRequestDto dto) {
-        return null;
+       validarUsuario(dto);
+
+       Optional<Usuario> optUsuario = usuarioRepository.findByEmail(dto.getEmail());
+
+       if(optUsuario.isPresent()) throw new ResourceBadRequestException("Email ja existente");
+
+       Usuario usuario = mapper.map(dto, Usuario.class);
+       usuario.setDataCadastro(new Date());
+       usuario = usuarioRepository.save(usuario);
+
+       return mapper.map(usuario, UsuarioResponseDto.class);
     }
 
     @Override
     public UsuarioResponseDto update(Long id, UsuarioRequestDto dto) {
-        return null;
+        UsuarioResponseDto usuarioBanco = findById(id);
+        validarUsuario(dto);
+
+        Usuario usuario = mapper.map(dto, Usuario.class);
+
+        usuario.setId(id);
+        usuario.setDataInativacao(usuarioBanco.getDataInativacao());
+        usuario.setDataCadastro(usuarioBanco.getDataCadastro());
+
+        usuario = usuarioRepository.save(usuario);
+
+        return mapper.map(usuario, UsuarioResponseDto.class);
     }
 
     @Override
     public void delete(Long id) {
+        Optional<Usuario> optUsuario = usuarioRepository.findById(id);
 
+        if (optUsuario.isEmpty()) throw new ResourceNotFoundException("Não foi possível encontrar com esse id");
+
+        Usuario usuario = optUsuario.get();
+        usuario.setDataInativacao(new Date());
+
+        usuarioRepository.save(usuario);
+    }
+
+    private void validarUsuario(UsuarioRequestDto dto) {
+        if (dto.getEmail() == null || dto.getSenha() == null)
+            throw new ResourceBadRequestException("E-mail e senha são obrigatórios");
     }
 }
