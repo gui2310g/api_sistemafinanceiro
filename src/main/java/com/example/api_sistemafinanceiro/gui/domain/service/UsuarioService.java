@@ -36,6 +36,12 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find user with this id"));
     }
 
+    public UsuarioResponseDto findByEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class))
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with this email"));
+    }
+
     @Override
     public UsuarioResponseDto create(UsuarioRequestDto dto) {
        validarUsuario(dto);
