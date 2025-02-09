@@ -8,6 +8,7 @@ import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioRequestDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioResponseDto;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -22,6 +23,8 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
     private UsuarioRepository usuarioRepository;
 
     private ModelMapper mapper;
+
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<UsuarioResponseDto> findAll() {
@@ -46,12 +49,12 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
     public UsuarioResponseDto create(UsuarioRequestDto dto) {
        validarUsuario(dto);
 
-       Optional<Usuario> optUsuario = usuarioRepository.findByEmail(dto.getEmail());
-
-       if(optUsuario.isPresent()) throw new ResourceBadRequestException("Email ja existente");
+       if(usuarioRepository.findByEmail(dto.getEmail()).isPresent())
+           throw new ResourceBadRequestException("Email ja existente");
 
        Usuario usuario = mapper.map(dto, Usuario.class);
        usuario.setDataCadastro(new Date());
+       usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
        usuario = usuarioRepository.save(usuario);
 
        return mapper.map(usuario, UsuarioResponseDto.class);
@@ -67,7 +70,7 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
         usuario.setId(id);
         usuario.setDataInativacao(usuarioBanco.getDataInativacao());
         usuario.setDataCadastro(usuarioBanco.getDataCadastro());
-
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuario = usuarioRepository.save(usuario);
 
         return mapper.map(usuario, UsuarioResponseDto.class);

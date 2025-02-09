@@ -12,7 +12,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,8 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Date;
 
-
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private AuthenticationManager authenticationManager;
 
@@ -34,8 +33,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private ModelMapper mapper;
 
-    public JwtAuthenticationFilter() {
-        setFilterProcessesUrl("/api/auth");
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+        super();
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        setFilterProcessesUrl("/auth");
     }
 
     @Override
