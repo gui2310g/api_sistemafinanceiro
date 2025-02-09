@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -39,32 +40,14 @@ public class Usuario implements UserDetails {
     private List<Titulo> titulos;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
+    public Collection<? extends GrantedAuthority> getAuthorities() {return Collections.emptyList(); }
 
     @Override
-    public String getPassword() {
-        return senha;
-    }
+    public String getPassword() { return senha; }
 
     @Override
-    public String getUsername() {
-        return email;
-    }
+    public String getUsername() { return email; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
-    }
+    public boolean isEnabled() { return dataInativacao == null; }
 }

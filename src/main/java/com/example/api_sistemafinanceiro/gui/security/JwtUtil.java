@@ -21,13 +21,15 @@ public class JwtUtil {
     @Value("${auth.jwt.expiration}")
     private Long jwtExpires;
 
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(Authentication authentication) {
-        Usuario usuario = (Usuario) authentication.getPrincipal();
         Date expirationDate = new Date(System.currentTimeMillis() + jwtExpires);
+
+        Usuario usuario = (Usuario) authentication.getPrincipal();
 
         return Jwts.builder()
                 .subject(usuario.getUsername())

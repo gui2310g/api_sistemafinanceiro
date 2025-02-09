@@ -13,7 +13,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -27,11 +26,10 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
     private AuthenticationManager authenticationManager;
 
     private JwtUtil jwtUtil;
-
-    private ModelMapper mapper;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         super();
@@ -68,10 +66,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Usuario usuario = (Usuario) authResult.getPrincipal();
         String token = jwtUtil.generateToken(authResult);
 
-        UsuarioResponseDto responseDto = mapper.map(usuario, UsuarioResponseDto.class);
+        UsuarioResponseDto responseDto = new UsuarioResponseDto();
+        responseDto.setId(usuario.getId());
+        responseDto.setEmail(usuario.getEmail());
+        responseDto.setDataCadastro(usuario.getDataCadastro());
+        responseDto.setDataInativacao(usuario.getDataInativacao());
+        responseDto.setNome(usuario.getNome());
+        responseDto.setFoto(usuario.getFoto());
 
         LoginResponseDto loginResponseDto = new LoginResponseDto();
-        loginResponseDto.setToken("Bearer" + token);
+        loginResponseDto.setToken("Bearer " + token);
         loginResponseDto.setUsuario(responseDto);
 
         response.setCharacterEncoding("UTF-8");
