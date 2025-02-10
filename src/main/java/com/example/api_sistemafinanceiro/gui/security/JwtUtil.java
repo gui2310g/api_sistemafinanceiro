@@ -11,9 +11,13 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class JwtUtil {
+
+    private final Map<String, String> activeTokens = new ConcurrentHashMap<>();
 
     @Value("${auth.jwt.secret}")
     private String jwtSecret;
@@ -31,12 +35,16 @@ public class JwtUtil {
 
         Usuario usuario = (Usuario) authentication.getPrincipal();
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(usuario.getUsername())
                 .issuedAt(new Date())
                 .expiration(expirationDate)
                 .signWith(getSigningKey())
                 .compact();
+
+        activeTokens.put(usuario.getUsername(), token);
+
+        return token;
     }
 
     private Claims getClaims(String token) {
@@ -47,8 +55,11 @@ public class JwtUtil {
         return getClaims(token).getSubject();
     }
 
-    public Boolean isValidToken(String token) {
+    public boolean isValidToken(String token) {
         Claims claims = getClaims(token);
-        return claims.getSubject() != null && claims.getExpiration().after(new Date());
+        String email = claims.getSubject();
+
+        return activeTokens.containsKey(email) && activeTokens.get(email).equals(token) &&
+                claims.getExpiration().after(new Date());
     }
 }
