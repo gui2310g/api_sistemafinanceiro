@@ -36,13 +36,13 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
     public UsuarioResponseDto findById(Long id) {
         return usuarioRepository.findById(id)
                 .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class))
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("Não foi achado usuario com esse id" + id));
     }
 
     public UsuarioResponseDto findByEmail(String email) {
         return usuarioRepository.findByEmail(email)
                 .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class))
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with this email"));
+                .orElseThrow(() -> new ResourceNotFoundException("Não foi achado usuario com esse email"));
     }
 
     @Override
@@ -55,9 +55,8 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
        Usuario usuario = mapper.map(dto, Usuario.class);
        usuario.setDataCadastro(new Date());
        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-       usuario = usuarioRepository.save(usuario);
 
-       return mapper.map(usuario, UsuarioResponseDto.class);
+       return mapper.map(usuarioRepository.save(usuario), UsuarioResponseDto.class);
     }
 
     @Override
@@ -71,9 +70,8 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
         usuario.setDataInativacao(usuarioBanco.getDataInativacao());
         usuario.setDataCadastro(usuarioBanco.getDataCadastro());
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-        usuario = usuarioRepository.save(usuario);
 
-        return mapper.map(usuario, UsuarioResponseDto.class);
+        return mapper.map(usuarioRepository.save(usuario), UsuarioResponseDto.class);
     }
 
     @Override
