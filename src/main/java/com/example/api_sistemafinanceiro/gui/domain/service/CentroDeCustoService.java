@@ -24,7 +24,9 @@ public class CentroDeCustoService implements ICrudService<CentrodeCustoRequestDt
 
     @Override
     public List<CentrodeCustoResponseDto> findAll() {
-        return centroDeCustoRepository.findAll().stream()
+        Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return centroDeCustoRepository.findByUsuario(usuario).stream()
                 .map(centroDeCusto -> mapper.map(centroDeCusto, CentrodeCustoResponseDto.class)).toList();
     }
 
