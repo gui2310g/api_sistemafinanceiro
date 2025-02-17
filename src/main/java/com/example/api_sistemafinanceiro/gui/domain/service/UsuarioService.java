@@ -1,5 +1,6 @@
 package com.example.api_sistemafinanceiro.gui.domain.service;
 
+import com.example.api_sistemafinanceiro.gui.common.ConversorUsuario;
 import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceBadRequestException;
 import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceNotFoundException;
 import com.example.api_sistemafinanceiro.gui.domain.model.Usuario;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -28,20 +28,17 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
 
     @Override
     public List<UsuarioResponseDto> findAll() {
-        return usuarioRepository.findAll().stream()
-                .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class)).toList();
+        return usuarioRepository.findAll().stream().map(ConversorUsuario::converterParaDto).toList();
     }
 
     @Override
     public UsuarioResponseDto findById(Long id) {
-        return usuarioRepository.findById(id)
-                .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class))
+        return usuarioRepository.findById(id).map(ConversorUsuario::converterParaDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Não foi achado usuario com esse id" + id));
     }
 
     public UsuarioResponseDto findByEmail(String email) {
-        return usuarioRepository.findByEmail(email)
-                .map(usuario -> mapper.map(usuario, UsuarioResponseDto.class))
+        return usuarioRepository.findByEmail(email).map(ConversorUsuario::converterParaDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Não foi achado usuario com esse email"));
     }
 
@@ -52,11 +49,11 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
        if(usuarioRepository.findByEmail(dto.getEmail()).isPresent())
            throw new ResourceBadRequestException("Email ja existente");
 
-       Usuario usuario = mapper.map(dto, Usuario.class);
+       Usuario usuario = ConversorUsuario.converterParaModelo(dto);
        usuario.setDataCadastro(new Date());
        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
 
-       return mapper.map(usuarioRepository.save(usuario), UsuarioResponseDto.class);
+       return ConversorUsuario.converterParaDto(usuarioRepository.save(usuario));
     }
 
     @Override
@@ -64,14 +61,14 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
         UsuarioResponseDto usuarioBanco = findById(id);
         validarUsuario(dto);
 
-        Usuario usuario = mapper.map(dto, Usuario.class);
+        Usuario usuario = ConversorUsuario.converterParaModelo(dto);
 
         usuario.setId(id);
         usuario.setDataInativacao(usuarioBanco.getDataInativacao());
         usuario.setDataCadastro(usuarioBanco.getDataCadastro());
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
 
-        return mapper.map(usuarioRepository.save(usuario), UsuarioResponseDto.class);
+        return ConversorUsuario.converterParaDto(usuarioRepository.save(usuario));
     }
 
     @Override

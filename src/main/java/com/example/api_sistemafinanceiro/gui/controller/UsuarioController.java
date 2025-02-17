@@ -3,9 +3,11 @@ package com.example.api_sistemafinanceiro.gui.controller;
 import com.example.api_sistemafinanceiro.gui.domain.service.UsuarioService;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioRequestDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioResponseDto;
+import com.example.api_sistemafinanceiro.gui.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +18,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDto>> findAll(){
@@ -32,14 +37,14 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.create(dto));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDto> update(@PathVariable Long id, @RequestBody UsuarioRequestDto dto){
-        return ResponseEntity.ok(usuarioService.update(id, dto));
+    @PutMapping
+    public ResponseEntity<UsuarioResponseDto> update(Authentication auth, @RequestBody UsuarioRequestDto dto) {
+        return ResponseEntity.ok(usuarioService.update(jwtUtil.getAuthenticatedUserId(auth), dto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id){
-        usuarioService.delete(id);
+    @DeleteMapping
+    public ResponseEntity<?> delete(Authentication authentication){
+        usuarioService.delete(jwtUtil.getAuthenticatedUserId(authentication));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
