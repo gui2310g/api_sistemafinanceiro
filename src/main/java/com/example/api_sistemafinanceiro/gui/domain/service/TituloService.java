@@ -1,5 +1,6 @@
 package com.example.api_sistemafinanceiro.gui.domain.service;
 
+import com.example.api_sistemafinanceiro.gui.common.ConversorTitulo;
 import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceBadRequestException;
 import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceNotFoundException;
 import com.example.api_sistemafinanceiro.gui.domain.model.Titulo;
@@ -26,8 +27,8 @@ public class TituloService implements ICrudService<TituloRequestDto, TituloRespo
     @Override
     public List<TituloResponseDto> findAll() {
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return tituloRepository.findByUsuario(usuario).stream()
-                .map(titulo -> mapper.map(titulo, TituloResponseDto.class)).toList();
+
+        return tituloRepository.findByUsuario(usuario).stream().map(ConversorTitulo::converterParaDto).toList();
     }
 
     @Override
@@ -36,7 +37,7 @@ public class TituloService implements ICrudService<TituloRequestDto, TituloRespo
 
         return tituloRepository.findById(id)
                 .filter(titulo -> titulo.getUsuario().getId().equals(usuario.getId()))
-                .map(titulo -> mapper.map(titulo, TituloResponseDto.class))
+                .map(ConversorTitulo::converterParaDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Nao foi achado um titulo com esse id " + id));
     }
 
@@ -44,13 +45,13 @@ public class TituloService implements ICrudService<TituloRequestDto, TituloRespo
     public TituloResponseDto create(TituloRequestDto dto) {
         ValidarTitulo(dto);
 
-        Titulo titulo = mapper.map(dto, Titulo.class);
+        Titulo titulo = ConversorTitulo.converterParaModelo(dto);
 
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         titulo.setUsuario(usuario);
         titulo.setId(null);
 
-        return mapper.map(tituloRepository.save(titulo), TituloResponseDto.class);
+        return ConversorTitulo.converterParaDto(tituloRepository.save(titulo));
     }
 
     @Override
@@ -58,12 +59,12 @@ public class TituloService implements ICrudService<TituloRequestDto, TituloRespo
         findById(id);
         ValidarTitulo(dto);
 
-        Titulo titulo = mapper.map(dto, Titulo.class);
+        Titulo titulo = ConversorTitulo.converterParaModelo(dto);
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         titulo.setUsuario(usuario);
         titulo.setId(id);
 
-        return mapper.map(tituloRepository.save(titulo), TituloResponseDto.class);
+        return ConversorTitulo.converterParaDto(tituloRepository.save(titulo));
     }
 
     @Override
@@ -73,10 +74,8 @@ public class TituloService implements ICrudService<TituloRequestDto, TituloRespo
     }
 
     public List<TituloResponseDto> obterPorDataVencimento(LocalDateTime periodoInicial, LocalDateTime periodoFinal) {
-        return tituloRepository.obterFluxoCaixaPorDataVencimento(periodoInicial, periodoFinal)
-                .stream()
-                .map(titulo -> mapper.map(titulo, TituloResponseDto.class))
-                .toList();
+        return tituloRepository.obterFluxoCaixaPorDataVencimento(periodoInicial, periodoFinal).stream()
+                .map(ConversorTitulo::converterParaDto).toList();
     }
 
 

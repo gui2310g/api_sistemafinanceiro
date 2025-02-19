@@ -21,7 +21,6 @@ public class CentroDeCustoService implements ICrudService<CentrodeCustoRequestDt
 
     private final CentroDeCustoRepository centroDeCustoRepository;
 
-    private ModelMapper mapper;
 
     @Override
     public List<CentrodeCustoResponseDto> findAll() {

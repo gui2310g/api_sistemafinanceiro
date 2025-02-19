@@ -22,5 +22,5 @@ public interface TituloRepository extends JpaRepository<Titulo, Long> {
             @Param("periodoFinal") LocalDateTime periodoFinal
     );
 
-    List<Usuario> findByUsuario(Usuario usuario);
+    List<Titulo> findByUsuario(Usuario usuario);
 }

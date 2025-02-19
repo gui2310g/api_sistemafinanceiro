@@ -19,24 +19,19 @@ public class DashboardService {
 
     public DashboardResponseDto obterFluxodeCaixa(LocalDateTime periodoInicial, LocalDateTime periodoFinal) {
         List<TituloResponseDto> titulos = tituloService.obterPorDataVencimento(periodoInicial, periodoFinal);
-        Double totalApagar = 0.0;
-        Double totalReceber = 0.0;
 
-        List<TituloResponseDto> titulosApagar = new ArrayList<>();
-        List<TituloResponseDto> titulosReceber = new ArrayList<>();
-        Double saldo = 0.0;
+        List<TituloResponseDto> titulosApagar = titulos.stream()
+                .filter(titulo -> titulo.getTipo() == ETipoTitulo.APAGAR).toList();
 
-        for(TituloResponseDto titulo : titulos) {
-            if (titulo.getTipo() == ETipoTitulo.APAGAR) {
-                totalApagar += titulo.getValor();
-                titulosApagar.add(titulo);
-            } else {
-                totalReceber += titulo.getValor();
-                titulosReceber.add(titulo);
-            }
-        }
-        saldo = totalReceber - totalApagar;
-        
+        double totalApagar = titulosApagar.stream().mapToDouble(TituloResponseDto::getValor).sum();
+
+        List<TituloResponseDto> titulosReceber = titulos.stream()
+                .filter(titulo -> titulo.getTipo() == ETipoTitulo.ARECEBER).toList();
+
+        double totalReceber = titulosReceber.stream().mapToDouble(TituloResponseDto::getValor).sum();
+
+        double saldo = totalReceber - totalApagar;
+
         return new DashboardResponseDto(totalApagar, totalReceber, saldo, titulosApagar, titulosReceber);
     }
 }

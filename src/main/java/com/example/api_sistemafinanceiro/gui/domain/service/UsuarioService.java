@@ -22,8 +22,6 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
 
     private UsuarioRepository usuarioRepository;
 
-    private ModelMapper mapper;
-
     private PasswordEncoder passwordEncoder;
 
     @Override
