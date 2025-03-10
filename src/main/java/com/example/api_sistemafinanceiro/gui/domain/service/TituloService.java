@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -49,6 +50,7 @@ public class TituloService implements ICrudService<TituloRequestDto, TituloRespo
 
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         titulo.setUsuario(usuario);
+        titulo.setDataCadastro(new Date());
         titulo.setId(null);
 
         return ConversorTitulo.converterParaDto(tituloRepository.save(titulo));
