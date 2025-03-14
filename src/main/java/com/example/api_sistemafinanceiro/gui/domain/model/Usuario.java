@@ -1,8 +1,10 @@
 package com.example.api_sistemafinanceiro.gui.domain.model;
 
+import com.example.api_sistemafinanceiro.gui.domain.enums.ETipoUsuario;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -36,18 +38,31 @@ public class Usuario implements UserDetails {
 
     private Date dataInativacao;
 
+    @Enumerated(EnumType.STRING)
+    private ETipoUsuario role = ETipoUsuario.USUARIO;
+
     @OneToMany(mappedBy = "usuario")
     private List<Titulo> titulos;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {return Collections.emptyList(); }
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.role == ETipoUsuario.ADMINISTRADOR
+                ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"))
+                : List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
 
     @Override
-    public String getPassword() { return senha; }
+    public String getPassword() {
+        return senha;
+    }
 
     @Override
-    public String getUsername() { return email; }
+    public String getUsername() {
+        return email;
+    }
 
     @Override
-    public boolean isEnabled() { return dataInativacao == null; }
+    public boolean isEnabled() {
+        return dataInativacao == null;
+    }
 }

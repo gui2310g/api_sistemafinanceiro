@@ -19,4 +19,6 @@ public class UsuarioResponseDto {
     private Date dataInativacao;
 
     private Date dataCadastro;
+
+    private String role;
 }
