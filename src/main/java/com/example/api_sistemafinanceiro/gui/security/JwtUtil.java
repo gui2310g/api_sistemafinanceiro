@@ -23,8 +23,6 @@ public class JwtUtil {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    private Authentication authentication;
-
     public String generateToken(String email, String role) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(jwtSecret);

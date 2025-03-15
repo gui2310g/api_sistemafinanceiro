@@ -5,11 +5,11 @@ import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceBadRequest
 import com.example.api_sistemafinanceiro.gui.domain.exception.ResourceNotFoundException;
 import com.example.api_sistemafinanceiro.gui.domain.model.Usuario;
 import com.example.api_sistemafinanceiro.gui.domain.repository.UsuarioRepository;
+import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioDetailResponseDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioRequestDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioResponseDto;
 import com.example.api_sistemafinanceiro.gui.security.JwtUtil;
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,8 +43,7 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
                 .orElseThrow(() -> new ResourceNotFoundException("Não foi achado usuario com esse email"));
     }
 
-    @Override
-    public UsuarioResponseDto create(UsuarioRequestDto dto) {
+    public UsuarioDetailResponseDto create(UsuarioRequestDto dto) {
        validarUsuario(dto);
 
        if(usuarioRepository.findByEmail(dto.getEmail()).isPresent())
@@ -54,10 +53,10 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
        usuario.setDataCadastro(new Date());
        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
        String token = jwtUtil.generateToken(usuario.getEmail(), usuario.getRole().name());
-       UsuarioResponseDto usuarioResponseDto = ConversorUsuario.converterParaDto(usuarioRepository.save(usuario));
-       usuarioResponseDto.setToken(token);
+       UsuarioDetailResponseDto usuarioDto = ConversorUsuario.converterParaDtoCadastrado(usuarioRepository.save(usuario));
+       usuarioDto.setToken(token);
 
-       return usuarioResponseDto;
+       return usuarioDto;
     }
 
     @Override

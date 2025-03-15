@@ -1,6 +1,7 @@
 package com.example.api_sistemafinanceiro.gui.controller;
 
 import com.example.api_sistemafinanceiro.gui.domain.service.UsuarioService;
+import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioDetailResponseDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioRequestDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioResponseDto;
 import com.example.api_sistemafinanceiro.gui.security.JwtUtil;
@@ -33,7 +34,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioResponseDto> create(@RequestBody UsuarioRequestDto dto){
+    public ResponseEntity<UsuarioDetailResponseDto> create(@RequestBody UsuarioRequestDto dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.create(dto));
     }
 

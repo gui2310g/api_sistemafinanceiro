@@ -36,7 +36,7 @@ public class CentroDeCustoService implements ICrudService<CentrodeCustoRequestDt
                 .orElseThrow(() -> new ResourceNotFoundException("Não foi achado um centro de custo com id " + id));
     }
 
-    @Override
+
     public CentrodeCustoResponseDto create(CentrodeCustoRequestDto dto) {
         CentroDeCusto centroDeCusto = ConversorCentrodeCusto.converterparaModelo(dto);
 
