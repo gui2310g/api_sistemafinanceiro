@@ -1,12 +1,8 @@
 package com.example.api_sistemafinanceiro.gui.config;
 
-import com.example.api_sistemafinanceiro.gui.security.JwtAuthenticationFilter;
-import com.example.api_sistemafinanceiro.gui.security.JwtAuthorizationFilter;
 import com.example.api_sistemafinanceiro.gui.security.JwtUtil;
-import com.example.api_sistemafinanceiro.gui.security.UserDetailsSecurity;
-import lombok.AllArgsConstructor;
+import com.example.api_sistemafinanceiro.gui.security.SecurityFilter;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,51 +14,37 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
-
     @Autowired
-    private final JwtUtil jwtUtil;
-
-    @Autowired
-    private final AuthenticationConfiguration authenticationConfiguration;
-
-    @Autowired
-    private final UserDetailsSecurity userDetailsSecurity;
+    private SecurityFilter securityFilter;
 
     @Value("${client-url}")
     private String clientUrl;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf(AbstractHttpConfigurer::disable)
+        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth.requestMatchers(
-                                HttpMethod.POST,
-                                "/usuarios")
-                        .permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/usuarios").hasRole("USUARIO")
+                        .requestMatchers("/tasks/**").hasRole("USUARIO")
+                        .requestMatchers("/usuarios/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/auth").permitAll()
                         .anyRequest()
                         .authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .addFilter(new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration), jwtUtil))
-                .addFilter(new JwtAuthorizationFilter(
-                        authenticationManager(authenticationConfiguration),
-                        jwtUtil,
-                        userDetailsSecurity
-                ))
-                .sessionManagement(
-                        session ->
-                                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        return httpSecurity.build();
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean
@@ -71,10 +53,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean

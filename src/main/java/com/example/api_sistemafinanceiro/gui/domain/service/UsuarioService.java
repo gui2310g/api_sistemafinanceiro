@@ -7,6 +7,7 @@ import com.example.api_sistemafinanceiro.gui.domain.model.Usuario;
 import com.example.api_sistemafinanceiro.gui.domain.repository.UsuarioRepository;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioRequestDto;
 import com.example.api_sistemafinanceiro.gui.dto.Usuario.UsuarioResponseDto;
+import com.example.api_sistemafinanceiro.gui.security.JwtUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,8 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
     private UsuarioRepository usuarioRepository;
 
     private PasswordEncoder passwordEncoder;
+
+    private JwtUtil jwtUtil;
 
     @Override
     public List<UsuarioResponseDto> findAll() {
@@ -50,8 +53,11 @@ public class UsuarioService implements ICrudService<UsuarioRequestDto, UsuarioRe
        Usuario usuario = ConversorUsuario.converterParaModelo(dto);
        usuario.setDataCadastro(new Date());
        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+       String token = jwtUtil.generateToken(usuario.getEmail(), usuario.getRole().name());
+       UsuarioResponseDto usuarioResponseDto = ConversorUsuario.converterParaDto(usuarioRepository.save(usuario));
+       usuarioResponseDto.setToken(token);
 
-       return ConversorUsuario.converterParaDto(usuarioRepository.save(usuario));
+       return usuarioResponseDto;
     }
 
     @Override

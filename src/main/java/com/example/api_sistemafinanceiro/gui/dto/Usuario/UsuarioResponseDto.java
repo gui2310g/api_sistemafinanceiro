@@ -21,4 +21,6 @@ public class UsuarioResponseDto {
     private Date dataCadastro;
 
     private String role;
+
+    private String token;
 }
